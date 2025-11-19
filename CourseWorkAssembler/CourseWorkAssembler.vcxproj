@@ -128,11 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Auth.cpp" />
+    <ClCompile Include="Authorization.cpp" />
+    <ClCompile Include="InputFunctions.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Auth.h" />
+    <ClInclude Include="Authorization.h" />
+    <ClInclude Include="InputFunctions.h" />
+    <ClInclude Include="Vigenere.h" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="Vigenere.asm">

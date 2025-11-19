@@ -1,164 +1,166 @@
 .code
-public VigenereEncryptEnglish
 
-; =============================================
-; Шифрование Виженера для английского текста
-; Вход: RCX - указатель на входную строку (char*)
-;       RDX - указатель на ключевую строку (char*)  
-;       R8  - указатель на выходной буфер (char*)
-; =============================================
-VigenereEncryptEnglish proc
+PUBLIC ExtractKey
+PUBLIC VigenereEncrypt
+PUBLIC VigenereDecrypt
+
+; =============================================================
+; strlen — вычисляет длину строки
+; Вход: RCX — указатель на строку
+; Выход: RAX — длина
+; =============================================================
+StrLen proc
+    xor rax, rax
+LEN_LOOP:
+    cmp byte ptr [rcx+rax], 0
+    je LEN_DONE
+    inc rax
+    jmp LEN_LOOP
+LEN_DONE:
+    ret
+StrLen endp
+
+
+
+; =============================================================
+; ExtractKey
+; Вход:
+;   RCX — строка "Фамилия Имя Отчество"
+;   RDX — буфер под ключ
+; Ключ = третьи буквы каждого слова
+; =============================================================
+ExtractKey proc
+    push rbx
+    push r12
+
+    mov r12, rcx    ; входная строка
+    mov rbx, rdx    ; выходной буфер
+    xor rcx, rcx    ; счетчик букв в слове
+
+EK_NEXT:
+    mov al, [r12]
+    test al, al
+    jz EK_FINISH
+
+    cmp al, ' '
+    jne EK_INWORD
+    mov rcx, 0
+    jmp EK_SKIP
+
+EK_INWORD:
+    inc rcx
+    cmp rcx, 3
+    jne EK_SKIP
+    mov [rbx], al
+    inc rbx
+
+EK_SKIP:
+    inc r12
+    jmp EK_NEXT
+
+EK_FINISH:
+    mov byte ptr [rbx], 0
+    pop r12
+    pop rbx
+    ret
+ExtractKey endp
+
+
+
+; =============================================================
+; VigenereEncrypt
+; Вход:
+;   RCX — указатель на строку
+;   RDX — указатель на ключ
+; Результат пишется обратно в RCX
+; =============================================================
+VigenereEncrypt proc
     push rbx
     push r12
     push r13
-    push r14
-    push r15
-    
-    mov r12, rcx        ; сохраняем входную строку
-    mov r13, rdx        ; сохраняем ключевую строку
-    mov r14, r8         ; сохраняем выходной буфер
-    mov r15, rdx        ; начало ключа для сброса
-    
-vigenere_loop:
-    mov al, [r12]       ; читаем символ из входной строки
-    test al, al         ; проверяем конец строки (0)
-    jz vigenere_done
-    
-    ; Проверяем строчные буквы a-z
-    cmp al, 'a'
-    jb check_uppercase
-    cmp al, 'z'
-    ja copy_char
-    
-    ; Обрабатываем строчную букву
-process_lower:
-    mov rbx, r13        ; текущая позиция в ключе
-    mov cl, [rbx]       ; читаем символ ключа
-    test cl, cl         ; если ключ закончился - начинаем сначала
-    jnz check_key_lower
-    mov r13, r15        ; сбрасываем ключ на начало
-    mov cl, [r13]
-    
-check_key_lower:
-    ; Пропускаем не-буквенные символы в ключе
-    cmp cl, 'a'
-    jb check_upper_key_lower
-    cmp cl, 'z'
-    ja check_upper_key_lower
-    jmp encrypt_lower
-    
-check_upper_key_lower:
-    cmp cl, 'A'
-    jb skip_key_char_lower
-    cmp cl, 'Z'
-    ja skip_key_char_lower
-    jmp encrypt_lower_upper_key
 
-skip_key_char_lower:
-    inc r13             ; пропускаем не-буквенный символ ключа
-    jmp process_lower   ; пробуем следующий символ ключа
+    mov r12, rcx    ; текст
+    mov r13, rdx    ; ключ
+    mov rbx, rdx    ; начало ключа
 
-encrypt_lower:
-    ; Строчный ключ для строчной буквы
-    sub cl, 'a'         ; cl = смещение ключа (0-25)
-    sub al, 'a'         ; al = позиция символа (0-25)
-    add al, cl          ; шифруем: (char_pos + key_pos)
-    cmp al, 26          ; проверяем выход за пределы алфавита
-    jb store_lower
-    sub al, 26          ; модуль 26
-    
-store_lower:
-    add al, 'a'         ; обратно в символ
-    mov [r14], al
-    inc r13             ; переходим к следующему символу ключа
-    jmp next_char_v
+    mov rcx, r13
+    call StrLen
+    mov r8, rax     ; длина ключа
 
-encrypt_lower_upper_key:
-    ; Заглавный ключ для строчной буквы
-    sub cl, 'A'         ; cl = смещение ключа (0-25)
-    sub al, 'a'         ; al = позиция символа (0-25)
-    add al, cl          ; шифруем: (char_pos + key_pos)
-    cmp al, 26          ; проверяем выход за пределы алфавита
-    jb store_lower
-    sub al, 26          ; модуль 26
-    jmp store_lower
+ENC_LOOP:
+    mov al, [r12]
+    test al, al
+    jz ENC_DONE
 
-check_uppercase:
-    ; Проверяем заглавные буквы A-Z
-    cmp al, 'A'
-    jb copy_char
-    cmp al, 'Z'
-    ja copy_char
-    
-    ; Обрабатываем заглавную букву
-process_upper:
-    mov rbx, r13        ; текущая позиция в ключе
-    mov cl, [rbx]       ; читаем символ ключа
-    test cl, cl         ; если ключ закончился - начинаем сначала
-    jnz check_key_upper
-    mov r13, r15        ; сбрасываем ключ на начало
-    mov cl, [r13]
-    
-check_key_upper:
-    ; Пропускаем не-буквенные символы в ключе
-    cmp cl, 'A'
-    jb check_lower_key_upper
-    cmp cl, 'Z'
-    ja check_lower_key_upper
-    jmp encrypt_upper
-    
-check_lower_key_upper:
-    cmp cl, 'a'
-    jb skip_key_char_upper
-    cmp cl, 'z'
-    ja skip_key_char_upper
-    jmp encrypt_upper_lower_key
+    mov bl, [r13]
+    test bl, bl
+    jnz ENC_APPLY
 
-skip_key_char_upper:
-    inc r13             ; пропускаем не-буквенный символ ключа
-    jmp process_upper   ; пробуем следующий символ ключа
+    mov r13, rbx
+    mov bl, [r13]
 
-encrypt_upper:
-    ; Заглавный ключ для заглавной буквы
-    sub cl, 'A'         ; cl = смещение ключа (0-25)
-    sub al, 'A'         ; al = позиция символа (0-25)
-    add al, cl          ; шифруем: (char_pos + key_pos)
-    cmp al, 26          ; проверяем выход за пределы алфавита
-    jb store_upper
-    sub al, 26          ; модуль 26
-    
-store_upper:
-    add al, 'A'         ; обратно в символ
-    mov [r14], al
-    inc r13             ; переходим к следующему символу ключа
-    jmp next_char_v
+ENC_APPLY:
+    add al, bl
+    mov [r12], al
 
-encrypt_upper_lower_key:
-    ; Строчный ключ для заглавной буквы
-    sub cl, 'a'         ; cl = смещение ключа (0-25)
-    sub al, 'A'         ; al = позиция символа (0-25)
-    add al, cl          ; шифруем: (char_pos + key_pos)
-    cmp al, 26          ; проверяем выход за пределы алфавита
-    jb store_upper
-    sub al, 26          ; модуль 26
-    jmp store_upper
+    inc r12
+    inc r13
+    jmp ENC_LOOP
 
-copy_char:
-    ; Не буква - копируем как есть (ключ не двигаем)
-    mov [r14], al
-
-next_char_v:
-    inc r12             ; переходим к следующему символу входной строки
-    inc r14             ; переходим к следующей позиции выходного буфера
-    jmp vigenere_loop
-
-vigenere_done:
-    mov byte ptr [r14], 0   ; добавляем нулевой терминатор
-    pop r15
-    pop r14
+ENC_DONE:
     pop r13
     pop r12
     pop rbx
     ret
-VigenereEncryptEnglish endp
+VigenereEncrypt endp
+
+
+
+; =============================================================
+; VigenereDecrypt
+; Вход:
+;   RCX — указатель на строку
+;   RDX — указатель на ключ
+; Результат пишется обратно в RCX
+; =============================================================
+VigenereDecrypt proc
+    push rbx
+    push r12
+    push r13
+
+    mov r12, rcx
+    mov r13, rdx
+    mov rbx, rdx
+
+    mov rcx, r13
+    call StrLen
+    mov r8, rax
+
+DEC_LOOP:
+    mov al, [r12]
+    test al, al
+    jz DEC_DONE
+
+    mov bl, [r13]
+    test bl, bl
+    jnz DEC_APPLY
+
+    mov r13, rbx
+    mov bl, [r13]
+
+DEC_APPLY:
+    sub al, bl
+    mov [r12], al
+
+    inc r12
+    inc r13
+    jmp DEC_LOOP
+
+DEC_DONE:
+    pop r13
+    pop r12
+    pop rbx
+    ret
+VigenereDecrypt endp
+
 end
