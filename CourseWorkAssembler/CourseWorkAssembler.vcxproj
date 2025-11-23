@@ -131,14 +131,20 @@
     <ClCompile Include="Authorization.cpp" />
     <ClCompile Include="InputFunctions.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Menus.cpp" />
+    <ClCompile Include="TreeUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AsmLib.h" />
     <ClInclude Include="Authorization.h" />
     <ClInclude Include="InputFunctions.h" />
+    <ClInclude Include="Menus.h" />
+    <ClInclude Include="Structures.h" />
+    <ClInclude Include="TreeUtils.h" />
     <ClInclude Include="Vigenere.h" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="Vigenere.asm">
+    <MASM Include="Functions.asm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </MASM>
   </ItemGroup>

@@ -1,7 +1,10 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <limits>
+
 using namespace std;
-int InputInt(const char*, int, int);
-int InputInt(const char*, int);
-string InputStr(const char*);
+
+int InputInt(const char* query, int minValue, int maxValue);
+int InputInt(const char* query, int minValue);
+string InputStr(const char* query);

@@ -1,33 +1,40 @@
-﻿#include <iostream>
-#include <clocale>
-#include <Windows.h>
-#include "Authorization.h"
-#include "Vigenere.h"
+﻿#include "Authorization.h"
+#include "Menus.h"
+#include "TreeUtils.h"
+#include <iostream>
+#include <windows.h> 
 
 using namespace std;
 
-int main() 
-{
-    setlocale(LC_ALL, "RUS");
+int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
-    const char* fio = "Tselkovikov Yury Evgenevich";
-    char key[16];
+    UserAndAdmin currentUser;
 
-    // Генерируем ключ "лиг"
-    ExtractKey(fio, key);
-    cout << "Сгенерированный ключ = " << key << endl;
+    // 1. Авторизация
+    if (ProcessOfAuthorization(currentUser)) {
 
-    char text[256] = "Example";
+        // 2. Инициализация данных (Дерево)
+        TreeNode* root = nullptr;
 
-    // Шифрование
-    VigenereEncrypt(text, key);
-    cout << "Зашифрованный текст = " << text << endl;
+        // Добавим пару тестовых данных для удобства
+        Train t1 = { 101, "Moscow", "25.11", 10, 0, 14, 30, 1500.0, 50, 10 };
+        Train t2 = { 205, "Kazan",  "25.11", 12, 15, 20, 0,  2000.0, 10, 100 };
+        Train t3 = { 102, "Moscow", "26.11", 21, 0,  07, 0,  1200.0, 100, 5 };
 
-    // Расшифровка
-    VigenereDecrypt(text, key);
-    cout << "Расшифрованный текст = " << text << endl;
+        AddNode(root, t1);
+        AddNode(root, t2);
+        AddNode(root, t3);
+
+        // 3. Запуск модуля в зависимости от роли
+        if (currentUser.role == "admin") {
+            AdminModule(root);
+        }
+        else {
+            UserModule(root);
+        }
+    }
 
     return 0;
 }
