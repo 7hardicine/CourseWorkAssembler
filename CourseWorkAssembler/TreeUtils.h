@@ -2,19 +2,16 @@
 #include "Structures.h"
 
 void PrintHeader();
-
-// Основные функции
+void PrintTrain(const Train& t);
 void AddNode(TreeNode*& root, Train data);
-void PrintTree(TreeNode* root); // Прямой обход
+void PrintTree(TreeNode* root);
+
+// Новые функции
+TreeNode* DeleteNode(TreeNode* root, int num);
+void EditTrainData(TreeNode* node);
+TreeNode* FindByNumber(TreeNode* root, int num);
+
 void SearchBySoldRange(TreeNode* root, int minVal, int maxVal);
-
-// Сортировка (через динамический массив)
 void SortAndPrint(TreeNode* root);
-
-// Индивидуальные задания
 void BuyTicketTask(TreeNode* root);
 void FilterTrainsTask(TreeNode* root);
-
-// Вспомогательные функции (для ручного управления памятью)
-int CountNodes(TreeNode* root);
-void TreeToArray(TreeNode* root, Train* arr, int& index);

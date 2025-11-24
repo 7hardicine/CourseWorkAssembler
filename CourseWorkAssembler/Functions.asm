@@ -1,8 +1,7 @@
 .code
 
-; ---------------------------------------------------------
 ; void AsmVigenereCipher(char* text (RCX), const char* key (RDX), bool encrypt (R8))
-; ---------------------------------------------------------
+
 AsmVigenereCipher PROC
     push rbx
     push rsi
@@ -90,9 +89,8 @@ Done:
     ret
 AsmVigenereCipher ENDP
 
-; ---------------------------------------------------------
 ; int AsmBuyTicket(int* ticketsLeft (RCX), int* ticketsSold (RDX), int count (R8))
-; ---------------------------------------------------------
+
 AsmBuyTicket PROC
     mov eax, [rcx]
     cmp eax, r8d        ; if left < count
@@ -112,11 +110,10 @@ Fail:
     ret
 AsmBuyTicket ENDP
 
-; ---------------------------------------------------------
 ; int AsmCheckFilter(const char* city (RCX), const char* target (RDX), 
 ;                    int arrH (R8), int arrM (R9), 
 ;                    int minH (Stack), int maxH (Stack))
-; ---------------------------------------------------------
+
 AsmCheckFilter PROC
     ; Сравнение строк
     push rsi

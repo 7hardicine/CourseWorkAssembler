@@ -38,9 +38,6 @@
     <ClInclude Include="InputFunctions.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Vigenere.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="AsmLib.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

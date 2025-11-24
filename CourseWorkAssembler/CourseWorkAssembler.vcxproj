@@ -141,7 +141,6 @@
     <ClInclude Include="Menus.h" />
     <ClInclude Include="Structures.h" />
     <ClInclude Include="TreeUtils.h" />
-    <ClInclude Include="Vigenere.h" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="Functions.asm">

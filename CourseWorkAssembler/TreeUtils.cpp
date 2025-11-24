@@ -35,12 +35,68 @@ void AddNode(TreeNode*& root, Train data) {
     }
 }
 
-// Прямой обход (Top-down)
 void PrintTree(TreeNode* root) {
     if (!root) return;
     PrintTrain(root->data);
     PrintTree(root->left);
     PrintTree(root->right);
+}
+
+// Удаление узла
+TreeNode* FindMin(TreeNode* root) {
+    while (root->left != nullptr) root = root->left;
+    return root;
+}
+
+TreeNode* DeleteNode(TreeNode* root, int num) {
+    if (root == nullptr) return root;
+
+    if (num < root->data.number) {
+        root->left = DeleteNode(root->left, num);
+    }
+    else if (num > root->data.number) {
+        root->right = DeleteNode(root->right, num);
+    }
+    else {
+        // Узел найден
+        // 1. Нет детей
+        if (root->left == nullptr && root->right == nullptr) {
+            delete root;
+            root = nullptr;
+        }
+        // 2. Один ребенок
+        else if (root->left == nullptr) {
+            TreeNode* temp = root;
+            root = root->right;
+            delete temp;
+        }
+        else if (root->right == nullptr) {
+            TreeNode* temp = root;
+            root = root->left;
+            delete temp;
+        }
+        // 3. Два ребенка
+        else {
+            TreeNode* temp = FindMin(root->right);
+            root->data = temp->data; // Копируем данные
+            root->right = DeleteNode(root->right, temp->data.number); // Удаляем дубликат
+        }
+    }
+    return root;
+}
+
+void EditTrainData(TreeNode* node) {
+    if (!node) return;
+    cout << "Редактирование поезда #" << node->data.number << endl;
+    cout << "Введите новые данные:\n";
+    node->data.destination = InputStr("Пункт: ");
+    node->data.depDate = InputStr("Дата: ");
+    cout << "Время отпр (Ч М): "; cin >> node->data.depH >> node->data.depM;
+    cout << "Время приб (Ч М): "; cin >> node->data.arrH >> node->data.arrM;
+    cout << "Цена: "; cin >> node->data.price;
+    node->data.ticketsLeft = InputInt("Остаток: ", 0);
+    cin.ignore(256, '\n');
+    cout << "Обновлено.\n";
 }
 
 void SearchBySoldRange(TreeNode* root, int minVal, int maxVal) {
@@ -52,23 +108,18 @@ void SearchBySoldRange(TreeNode* root, int minVal, int maxVal) {
     SearchBySoldRange(root->right, minVal, maxVal);
 }
 
-// --- Сортировка без векторов ---
-
-// 1. Считаем узлы
 int CountNodes(TreeNode* root) {
     if (!root) return 0;
     return 1 + CountNodes(root->left) + CountNodes(root->right);
 }
 
-// 2. Переносим данные в массив
 void TreeToArray(TreeNode* root, Train* arr, int& index) {
     if (!root) return;
-    arr[index++] = root->data; // Прямой порядок, но для сортировки неважно
+    arr[index++] = root->data;
     TreeToArray(root->left, arr, index);
     TreeToArray(root->right, arr, index);
 }
 
-// 3. Сортировка вставками и вывод
 void SortAndPrint(TreeNode* root) {
     int count = CountNodes(root);
     if (count == 0) {
@@ -76,37 +127,26 @@ void SortAndPrint(TreeNode* root) {
         return;
     }
 
-    // Динамический массив
     Train* arr = new Train[count];
     int idx = 0;
     TreeToArray(root, arr, idx);
 
     // Сортировка вставками
-    // Ключи: Пункт назначения (возр), затем Номер поезда (возр)
     for (int i = 1; i < count; i++) {
         Train key = arr[i];
         int j = i - 1;
-
-        // Условие: пока пред. элемент "больше" текущего
-        // Сравнение строк destination
         while (j >= 0) {
             bool needSwap = false;
-            if (arr[j].destination > key.destination) {
-                needSwap = true;
-            }
+            if (arr[j].destination > key.destination) needSwap = true;
             else if (arr[j].destination == key.destination) {
-                if (arr[j].number > key.number) {
-                    needSwap = true;
-                }
+                if (arr[j].number > key.number) needSwap = true;
             }
 
             if (needSwap) {
                 arr[j + 1] = arr[j];
                 j--;
             }
-            else {
-                break;
-            }
+            else break;
         }
         arr[j + 1] = key;
     }
@@ -115,11 +155,8 @@ void SortAndPrint(TreeNode* root) {
     for (int i = 0; i < count; i++) {
         PrintTrain(arr[i]);
     }
-
-    delete[] arr; // Очистка памяти
+    delete[] arr;
 }
-
-// --- Индивидуальные задания ---
 
 TreeNode* FindByNumber(TreeNode* root, int num) {
     if (!root) return nullptr;
@@ -131,32 +168,24 @@ TreeNode* FindByNumber(TreeNode* root, int num) {
 void BuyTicketTask(TreeNode* root) {
     int num = InputInt("Номер поезда: ", 1);
     TreeNode* node = FindByNumber(root, num);
-
     if (!node) {
         cout << "Поезд не найден." << endl;
         return;
     }
-
     cout << "Билетов: " << node->data.ticketsLeft << endl;
     int count = InputInt("Купить: ", 1);
-
-    // Вызов ASM
     int res = AsmBuyTicket(&node->data.ticketsLeft, &node->data.ticketsSold, count);
-
     if (res) cout << "Куплено! Осталось: " << node->data.ticketsLeft << endl;
     else cout << "Ошибка: мало билетов." << endl;
 }
 
 void TraverseFilter(TreeNode* root, const string& city, int minH, int maxH) {
     if (!root) return;
-
-    // Вызов ASM для проверки
     if (AsmCheckFilter(root->data.destination.c_str(), city.c_str(), root->data.arrH, root->data.arrM, minH, maxH)) {
         cout << "Поезд #" << root->data.number
             << " Прибытие: " << root->data.arrH << ":" << root->data.arrM
             << " Билетов: " << root->data.ticketsLeft << endl;
     }
-
     TraverseFilter(root->left, city, minH, maxH);
     TraverseFilter(root->right, city, minH, maxH);
 }

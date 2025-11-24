@@ -3,5 +3,8 @@
 #include "Structures.h"
 #include "Authorization.h"
 
-void AdminModule(TreeNode*& root);
-void UserModule(TreeNode*& root);
+void AdminAccountsMenu();
+void AdminDataMenu(TreeNode*& root);
+void AdminEditMode(TreeNode*& root);
+void AdminProcessMode(TreeNode* root);
+void UserDataMenu(TreeNode*& root);
