@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Authorization.cpp" />
+    <ClCompile Include="FileProcessing.cpp" />
     <ClCompile Include="InputFunctions.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Menus.cpp" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="AsmLib.h" />
     <ClInclude Include="Authorization.h" />
+    <ClInclude Include="FileProcessing.h" />
     <ClInclude Include="InputFunctions.h" />
     <ClInclude Include="Menus.h" />
     <ClInclude Include="Structures.h" />

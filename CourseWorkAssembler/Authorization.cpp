@@ -1,14 +1,15 @@
 #include "Authorization.h"
 #include "AsmLib.h"
-#include <windows.h>
+#include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include <conio.h>
 #include <iomanip>
+#include "FileProcessing.h"
 
 using namespace std;
 
 const char* KEY = "erg";
-const char* FILE_NAME = "AllPeople.txt";
 
 string EncryptPass(string pass) {
     if (pass.empty()) return "";
@@ -48,7 +49,10 @@ bool ProcessOfAuthorization(UserAndAdmin& man) {
 void Entrance(fstream& file, UserAndAdmin& man, bool* flag) {
     cout << "--- ВХОД ---" << endl;
     man.login = InputStr("Логин: ");
-    string rawPass = InputStr("Пароль: ");
+    string rawPass;
+    cout << "Пароль: ";
+    InputPassword(rawPass);
+    cout << std::endl;
     man.password = EncryptPass(rawPass);
 
     if (checkingFileForEntry(file, man)) {
@@ -60,6 +64,25 @@ void Entrance(fstream& file, UserAndAdmin& man, bool* flag) {
         cout << "Неверно.\n";
         Sleep(1500);
     }
+}
+
+void Registration(fstream& file, UserAndAdmin& man, bool* flag) {
+    cout << "--- РЕГИСТРАЦИЯ ---" << endl;
+    man.login = InputStr("Логин: ");
+
+    if (checkingFileForReg(file, man)) {
+        cout << "Логин занят.\n"; Sleep(1500); return;
+    }
+
+    string rawPass = InputStr("Пароль (лат): ");
+    man.password = EncryptPass(rawPass);
+
+    int r = InputInt("1-User, 2-Admin: ", 1, 2);
+    man.role = (r == 2) ? "admin" : "user";
+
+    file.clear();
+    file << endl << man.login << ";" << man.password << ";" << man.role;
+    cout << "OK.\n"; Sleep(1000);
 }
 
 bool checkingFileForEntry(fstream& file, UserAndAdmin& man) {
@@ -82,26 +105,6 @@ bool checkingFileForEntry(fstream& file, UserAndAdmin& man) {
         }
     }
     return false;
-}
-
-void Registration(fstream& file, UserAndAdmin& man, bool* flag) {
-    cout << "--- РЕГИСТРАЦИЯ ---" << endl;
-    man.login = InputStr("Логин: ");
-
-    if (checkingFileForReg(file, man)) {
-        cout << "Логин занят.\n"; Sleep(1500); return;
-    }
-
-    string rawPass = InputStr("Пароль (лат): ");
-    man.password = EncryptPass(rawPass);
-
-    int r = InputInt("1-User, 2-Admin: ", 1, 2);
-    man.role = (r == 2) ? "admin" : "user";
-
-    // Запись в конец файла
-    file.clear();
-    file << endl << man.login << ";" << man.password << ";" << man.role;
-    cout << "OK.\n"; Sleep(1000);
 }
 
 bool checkingFileForReg(fstream& file, UserAndAdmin& man) {
@@ -131,38 +134,6 @@ int GetUsersCount() {
     return count;
 }
 
-UserAndAdmin* LoadUsersToArray(int& count) {
-    count = GetUsersCount();
-    if (count == 0) return nullptr;
-
-    UserAndAdmin* arr = new UserAndAdmin[count];
-    ifstream file(FILE_NAME);
-    string line;
-    int i = 0;
-    while (getline(file, line) && i < count) {
-        if (line.empty()) continue;
-        size_t p1 = line.find(';');
-        size_t p2 = line.find(';', p1 + 1);
-        if (p1 == string::npos || p2 == string::npos) continue;
-
-        arr[i].login = line.substr(0, p1);
-        arr[i].password = line.substr(p1 + 1, p2 - p1 - 1);
-        arr[i].role = line.substr(p2 + 1);
-        i++;
-    }
-    file.close();
-    return arr;
-}
-
-void SaveArrayToFile(UserAndAdmin* arr, int count) {
-    ofstream file(FILE_NAME); // Перезапись файла
-    for (int i = 0; i < count; i++) {
-        file << arr[i].login << ";" << arr[i].password << ";" << arr[i].role;
-        if (i < count - 1) file << endl;
-    }
-    file.close();
-}
-
 void PrintUsersArray(UserAndAdmin* arr, int count) {
     if (!arr || count == 0) {
         cout << "Список пуст.\n";
@@ -174,5 +145,27 @@ void PrintUsersArray(UserAndAdmin* arr, int count) {
         cout << left << setw(5) << i + 1
             << setw(20) << arr[i].login
             << setw(10) << arr[i].role << endl;
+    }
+}
+
+void InputPassword(string& password)
+{
+    char ch;
+    while (true) {
+        ch = _getch();
+
+        if (ch == 13) { 
+            break;
+        }
+        else if (ch == 8) {
+            if (!password.empty()) {
+                password.pop_back();
+                cout << "\b \b";
+            }
+        }
+        else {
+            password += ch;
+            cout << '*';
+        }
     }
 }

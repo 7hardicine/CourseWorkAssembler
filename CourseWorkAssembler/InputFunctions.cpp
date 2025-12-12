@@ -1,10 +1,12 @@
 #include "InputFunctions.h"
+#include "FileProcessing.h"
+
 int InputInt(const char* query, int minValue, int maxValue)
 {
 	cout << query;
 	int choice;
 	cin >> choice;
-	while (cin.fail() || choice<minValue || choice> maxValue)
+	while (cin.fail() || choice < minValue || choice > maxValue)
 	{
 		cin.clear();
 		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');

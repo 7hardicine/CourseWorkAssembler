@@ -1,6 +1,8 @@
 #include "Authorization.h"
 #include "TreeUtils.h"
+#include "Menus.h"
 #include "InputFunctions.h"
+#include "FileProcessing.h"
 #include <iostream>
 #include <fstream>
 
@@ -25,8 +27,8 @@ void AdminAccountsMenu() {
     int count = 0;
     UserAndAdmin* users = nullptr;
 
-    while (true) {
-        // Каждый раз перезагружаем массив, чтобы иметь актуальные данные
+    while (true)
+    {
         if (users) delete[] users;
         users = LoadUsersToArray(count);
 
@@ -78,7 +80,6 @@ void AdminAccountsMenu() {
             PrintUsersArray(users, count);
             if (count == 0) { system("pause"); break; }
             int idx = InputInt("Введите No для ред.: ", 1, count) - 1;
-
             cout << "Редактирование " << users[idx].login << endl;
             string np = InputStr("Новый пароль (Enter - оставить): ");
             if (!np.empty()) {
@@ -99,8 +100,8 @@ void AdminAccountsMenu() {
             if (count == 0) { system("pause"); break; }
             int idx = InputInt("Введите No для удаления: ", 1, count) - 1;
 
-            if (users[idx].login == "admin") {
-                cout << "Нельзя удалить главного админа!\n"; system("pause"); break;
+            if (users[idx].role == "admin") {
+                cout << "Нельзя удалить админа!\n"; system("pause"); break;
             }
 
             // Создаем новый массив на 1 меньше
@@ -152,6 +153,7 @@ void AdminEditMode(TreeNode*& root) {
             PrintHeader(); PrintTree(root); system("pause"); break;
         case 2: // Добавление
         {
+            PrintTree(root);
             Train t;
             t.number = InputInt("Номер: ", 1);
             if (FindByNumber(root, t.number)) {
@@ -166,10 +168,12 @@ void AdminEditMode(TreeNode*& root) {
             t.ticketsSold = InputInt("Продано: ", 0);
             cin.ignore(256, '\n');
             AddNode(root, t);
+            OpenAndSaveTreeToFile(root);
             break;
         }
         case 3: // Редактирование
         {
+            PrintTree(root);
             int num = InputInt("Номер поезда: ", 1);
             TreeNode* node = FindByNumber(root, num);
             if (node) EditTrainData(node);
@@ -179,6 +183,7 @@ void AdminEditMode(TreeNode*& root) {
         }
         case 4: // Удаление
         {
+            PrintTree(root);
             int num = InputInt("Номер поезда: ", 1);
             root = DeleteNode(root, num);
             cout << "Удалено (если существовал).\n";
@@ -232,9 +237,10 @@ void UserDataMenu(TreeNode*& root) {
 
         switch (c) {
         case 1: PrintHeader(); PrintTree(root); system("pause"); break;
-        case 2: BuyTicketTask(root); system("pause"); break;
+        case 2: PrintTree(root); BuyTicketTask(root); OpenAndSaveTreeToFile(root); system("pause"); break;
         case 3:
         {
+            PrintTree(root);
             int minV = InputInt("Min проданных: ", 0);
             int maxV = InputInt("Max проданных: ", minV);
             PrintHeader();

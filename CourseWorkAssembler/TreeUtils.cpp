@@ -1,6 +1,7 @@
 #include "TreeUtils.h"
 #include "AsmLib.h"
 #include "InputFunctions.h"
+#include "FileProcessing.h"
 #include <iostream>
 #include <iomanip>
 
@@ -35,7 +36,8 @@ void AddNode(TreeNode*& root, Train data) {
     }
 }
 
-void PrintTree(TreeNode* root) {
+void PrintTree(TreeNode* root) 
+{
     if (!root) return;
     PrintTrain(root->data);
     PrintTree(root->left);
