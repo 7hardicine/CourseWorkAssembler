@@ -7,8 +7,6 @@
 
 using namespace std;
 
-// Сделать звездочки при вводе
-
 int main() 
 {
     SetConsoleCP(1251);
@@ -32,7 +30,6 @@ int main()
             UserModule(root);
         }
     }
-
 
     return 0;
 }

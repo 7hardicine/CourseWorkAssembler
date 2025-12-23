@@ -9,7 +9,7 @@
 void AdminModule(TreeNode*& root) {
     while (true) {
         system("cls");
-        cout << "=== МОДУЛЬ АДМИНИСТРАТОРА ===\n";
+        cout << "МОДУЛЬ АДМИНИСТРАТОРА\n";
         cout << "1. Работа с учетными записями\n";
         cout << "2. Работа с данными\n";
         cout << "0. Выход\n";
@@ -33,7 +33,7 @@ void AdminAccountsMenu() {
         users = LoadUsersToArray(count);
 
         system("cls");
-        cout << "--- Учетные записи ---\n";
+        cout << "Учетные записи\n";
         cout << "1. Просмотр\n";
         cout << "2. Добавление\n";
         cout << "3. Редактирование\n";
@@ -43,17 +43,14 @@ void AdminAccountsMenu() {
 
         if (c == 0) break;
         switch (c) {
-        case 1: // Просмотр
+        case 1: 
             PrintUsersArray(users, count);
             system("pause");
             break;
-        case 2: // Добавление
+        case 2: 
         {
-            // Для добавления просто дописываем в файл через режим ios::app
             UserAndAdmin newUser;
             newUser.login = InputStr("Новый логин: ");
-
-            // Проверка уникальности
             bool exists = false;
             for (int i = 0; i < count; i++) {
                 if (users[i].login == newUser.login) exists = true;
@@ -62,7 +59,9 @@ void AdminAccountsMenu() {
                 cout << "Логин занят!\n"; system("pause"); break;
             }
 
-            string rp = InputStr("Пароль: ");
+            string rp;
+            cout << "Введите пароль: ";
+            InputPassword(rp);
             newUser.password = EncryptPass(rp);
             int r = InputInt("Роль (1-user, 2-admin): ", 1, 2);
             newUser.role = (r == 2) ? "admin" : "user";
@@ -75,26 +74,29 @@ void AdminAccountsMenu() {
             system("pause");
             break;
         }
-        case 3: // Редактирование
+        case 3: 
         {
             PrintUsersArray(users, count);
             if (count == 0) { system("pause"); break; }
             int idx = InputInt("Введите No для ред.: ", 1, count) - 1;
+            if (users[idx].role == "admin") {
+                cout << "Нельзя имзменить админа!\n"; system("pause"); break;
+            }
             cout << "Редактирование " << users[idx].login << endl;
-            string np = InputStr("Новый пароль (Enter - оставить): ");
+            string np; 
+            cout << "Новый пароль (Enter - оставить): ";
+            InputPassword(np);
             if (!np.empty()) {
                 users[idx].password = EncryptPass(np);
             }
             int r = InputInt("Новая роль (1-user, 2-admin): ", 1, 2);
             users[idx].role = (r == 2) ? "admin" : "user";
-
-            // Сохраняем измененный массив
             SaveArrayToFile(users, count);
             cout << "Сохранено.\n";
             system("pause");
             break;
         }
-        case 4: // Удаление
+        case 4:
         {
             PrintUsersArray(users, count);
             if (count == 0) { system("pause"); break; }
@@ -104,11 +106,10 @@ void AdminAccountsMenu() {
                 cout << "Нельзя удалить админа!\n"; system("pause"); break;
             }
 
-            // Создаем новый массив на 1 меньше
             UserAndAdmin* newArr = new UserAndAdmin[count - 1];
             int j = 0;
             for (int i = 0; i < count; i++) {
-                if (i == idx) continue; // Пропускаем удаляемого
+                if (i == idx) continue;
                 newArr[j++] = users[i];
             }
 
@@ -127,7 +128,7 @@ void AdminAccountsMenu() {
 void AdminDataMenu(TreeNode*& root) {
     while (true) {
         system("cls");
-        cout << "--- Работа с данными (Admin) ---\n";
+        cout << "Работа с данными (Admin)\n";
         cout << "1. Режим редактирования\n";
         cout << "2. Режим обработки\n";
         cout << "0. Назад\n";
@@ -149,9 +150,9 @@ void AdminEditMode(TreeNode*& root) {
         if (c == 0) break;
 
         switch (c) {
-        case 1: // Просмотр
+        case 1:
             PrintHeader(); PrintTree(root); system("pause"); break;
-        case 2: // Добавление
+        case 2: 
         {
             PrintTree(root);
             Train t;
@@ -160,18 +161,27 @@ void AdminEditMode(TreeNode*& root) {
                 cout << "Уже есть!\n"; system("pause"); break;
             }
             t.destination = InputStr("Пункт: ");
-            t.depDate = InputStr("Дата: ");
-            cout << "Время отпр (Ч М): "; cin >> t.depH >> t.depM;
-            cout << "Время приб (Ч М): "; cin >> t.arrH >> t.arrM;
+
+            t.depDate = InputDate("Дата (ДД.ММ.ГГГГ): ");
+
+            InputTime("Время отпр (Ч М): ", t.depH, t.depM);
+            InputTime("Время приб (Ч М): ", t.arrH, t.arrM);
+
             cout << "Цена: "; cin >> t.price;
+            while (cin.fail() || t.price < 0) {
+                cin.clear(); cin.ignore(32767, '\n');
+                cout << "Некорректная цена. Введите снова: "; cin >> t.price;
+            }
+
             t.ticketsLeft = InputInt("Остаток: ", 0);
             t.ticketsSold = InputInt("Продано: ", 0);
-            cin.ignore(256, '\n');
+            cin.ignore(256, '\n'); 
+
             AddNode(root, t);
             OpenAndSaveTreeToFile(root);
             break;
         }
-        case 3: // Редактирование
+        case 3: 
         {
             PrintTree(root);
             int num = InputInt("Номер поезда: ", 1);
@@ -181,7 +191,7 @@ void AdminEditMode(TreeNode*& root) {
             system("pause");
             break;
         }
-        case 4: // Удаление
+        case 4: 
         {
             PrintTree(root);
             int num = InputInt("Номер поезда: ", 1);
@@ -225,7 +235,7 @@ void UserModule(TreeNode*& root) {
 void UserDataMenu(TreeNode*& root) {
     while (true) {
         system("cls");
-        cout << "=== МОДУЛЬ ПОЛЬЗОВАТЕЛЯ (Работа с данными) ===\n";
+        cout << "МОДУЛЬ ПОЛЬЗОВАТЕЛЯ (Работа с данными)\n";
         cout << "1. Просмотр\n";
         cout << "2. Инд. задание (Покупка)\n";
         cout << "3. Поиск (по проданным)\n";

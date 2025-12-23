@@ -47,7 +47,7 @@ bool ProcessOfAuthorization(UserAndAdmin& man) {
 }
 
 void Entrance(fstream& file, UserAndAdmin& man, bool* flag) {
-    cout << "--- ÂÕÎÄ ---" << endl;
+    cout << "ÂÕÎÄ" << endl;
     man.login = InputStr("Ëîãèí: ");
     string rawPass;
     cout << "Ïàðîëü: ";
@@ -67,14 +67,16 @@ void Entrance(fstream& file, UserAndAdmin& man, bool* flag) {
 }
 
 void Registration(fstream& file, UserAndAdmin& man, bool* flag) {
-    cout << "--- ÐÅÃÈÑÒÐÀÖÈß ---" << endl;
+    cout << "ÐÅÃÈÑÒÐÀÖÈß" << endl;
     man.login = InputStr("Ëîãèí: ");
 
     if (checkingFileForReg(file, man)) {
         cout << "Ëîãèí çàíÿò.\n"; Sleep(1500); return;
     }
 
-    string rawPass = InputStr("Ïàðîëü (ëàò): ");
+    string rawPass;
+    cout << "Ïàðîëü (ëàò): ";
+    InputPassword(rawPass);
     man.password = EncryptPass(rawPass);
 
     int r = InputInt("1-User, 2-Admin: ", 1, 2);
@@ -154,7 +156,7 @@ void InputPassword(string& password)
     while (true) {
         ch = _getch();
 
-        if (ch == 13) { 
+        if (ch == 13) {
             break;
         }
         else if (ch == 8) {
@@ -164,8 +166,14 @@ void InputPassword(string& password)
             }
         }
         else {
-            password += ch;
-            cout << '*';
+            if (static_cast<unsigned char>(ch) > 127) {
+                cout << "\nÎøèáêà! Êèðèëëèöà çàïðåùåíà. Ââåäèòå ïàðîëü çàíîâî: ";
+                password.clear();
+            }
+            else {
+                password += ch;
+                cout << '*';
+            }
         }
     }
 }

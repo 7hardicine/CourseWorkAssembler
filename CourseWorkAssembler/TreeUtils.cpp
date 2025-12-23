@@ -8,20 +8,33 @@
 using namespace std;
 
 void PrintHeader() {
-    cout << left << setw(6) << "No" << setw(15) << "Dest" << setw(10) << "Date"
-        << setw(8) << "Dep" << setw(8) << "Arr" << setw(10) << "Price"
-        << setw(8) << "Left" << setw(8) << "Sold" << endl;
+    cout << left
+        << setw(6) << "No"
+        << setw(20) << "Пункт"
+        << setw(12) << "Дата"
+        << setw(8) << "Отпр"
+        << setw(8) << "Приб"
+        << setw(10) << "Цена"
+        << setw(8) << "Ост."
+        << setw(8) << "Прод."
+        << endl;
+
+    cout << string(90, '-') << endl;
 }
 
 void PrintTrain(const Train& t) {
-    cout << left << setw(6) << t.number
-        << setw(15) << t.destination
-        << setw(10) << t.depDate
-        << t.depH << ":" << setfill('0') << setw(2) << t.depM << setfill(' ') << "  "
-        << t.arrH << ":" << setfill('0') << setw(2) << t.arrM << setfill(' ') << "  "
-        << setw(10) << t.price
+    cout << left
+        << setw(6) << t.number
+        << setw(20) << t.destination
+        << setw(12) << t.depDate;
+    cout << right << setfill('0') << setw(2) << t.depH << ":"
+        << setw(2) << t.depM << setfill(' ') << left << "   ";
+    cout << right << setfill('0') << setw(2) << t.arrH << ":"
+        << setw(2) << t.arrM << setfill(' ') << left << "   ";
+    cout << setw(10) << fixed << setprecision(2) << t.price
         << setw(8) << t.ticketsLeft
-        << setw(8) << t.ticketsSold << endl;
+        << setw(8) << t.ticketsSold
+        << endl;
 }
 
 void AddNode(TreeNode*& root, Train data) {
@@ -44,7 +57,6 @@ void PrintTree(TreeNode* root)
     PrintTree(root->right);
 }
 
-// Удаление узла
 TreeNode* FindMin(TreeNode* root) {
     while (root->left != nullptr) root = root->left;
     return root;
@@ -60,13 +72,10 @@ TreeNode* DeleteNode(TreeNode* root, int num) {
         root->right = DeleteNode(root->right, num);
     }
     else {
-        // Узел найден
-        // 1. Нет детей
         if (root->left == nullptr && root->right == nullptr) {
             delete root;
             root = nullptr;
         }
-        // 2. Один ребенок
         else if (root->left == nullptr) {
             TreeNode* temp = root;
             root = root->right;
@@ -77,11 +86,10 @@ TreeNode* DeleteNode(TreeNode* root, int num) {
             root = root->left;
             delete temp;
         }
-        // 3. Два ребенка
         else {
             TreeNode* temp = FindMin(root->right);
-            root->data = temp->data; // Копируем данные
-            root->right = DeleteNode(root->right, temp->data.number); // Удаляем дубликат
+            root->data = temp->data; 
+            root->right = DeleteNode(root->right, temp->data.number);
         }
     }
     return root;
@@ -91,12 +99,22 @@ void EditTrainData(TreeNode* node) {
     if (!node) return;
     cout << "Редактирование поезда #" << node->data.number << endl;
     cout << "Введите новые данные:\n";
+
     node->data.destination = InputStr("Пункт: ");
-    node->data.depDate = InputStr("Дата: ");
-    cout << "Время отпр (Ч М): "; cin >> node->data.depH >> node->data.depM;
-    cout << "Время приб (Ч М): "; cin >> node->data.arrH >> node->data.arrM;
+
+    node->data.depDate = InputDate("Дата (ДД.ММ.ГГГГ): ");
+
+    InputTime("Время отпр (Ч М): ", node->data.depH, node->data.depM);
+    InputTime("Время приб (Ч М): ", node->data.arrH, node->data.arrM);
+
     cout << "Цена: "; cin >> node->data.price;
+    while (cin.fail() || node->data.price < 0) {
+        cin.clear(); cin.ignore(32767, '\n');
+        cout << "Некорректная цена. Введите снова: "; cin >> node->data.price;
+    }
+
     node->data.ticketsLeft = InputInt("Остаток: ", 0);
+
     cin.ignore(256, '\n');
     cout << "Обновлено.\n";
 }
@@ -133,25 +151,55 @@ void SortAndPrint(TreeNode* root) {
     int idx = 0;
     TreeToArray(root, arr, idx);
 
-    // Сортировка вставками
-    for (int i = 1; i < count; i++) {
-        Train key = arr[i];
-        int j = i - 1;
-        while (j >= 0) {
-            bool needSwap = false;
-            if (arr[j].destination > key.destination) needSwap = true;
-            else if (arr[j].destination == key.destination) {
-                if (arr[j].number > key.number) needSwap = true;
+    int choice;
+    bool isChoice = false;
+    
+    do
+    {
+        cout << "По какому ключу вы хотите провести сортировку ? \n1 - по пункту назначения, 2 - по номеру рейса\n";
+        choice = InputInt("", 1);
+        switch (choice)
+        {
+        case 1: 
+            for (int i = 1; i < count; i++) {
+                Train key = arr[i];
+                int j = i - 1;
+                while (j >= 0) {
+                    bool needSwap = false;
+                    if (arr[j].destination > key.destination) needSwap = true;
+                    if (needSwap) {
+                        arr[j + 1] = arr[j];
+                        j--;
+                    }
+                    else break;
+                }
+                arr[j + 1] = key;
             }
-
-            if (needSwap) {
-                arr[j + 1] = arr[j];
-                j--;
+            isChoice = true;
+            break;
+        case 2:
+            for (int i = 1; i < count; i++) {
+                Train key = arr[i];
+                int j = i - 1;
+                while (j >= 0) {
+                    bool needSwap = false;
+                    if (arr[j].number > key.number) needSwap = true;
+                    if (needSwap) {
+                        arr[j + 1] = arr[j];
+                        j--;
+                    }
+                    else break;
+                }
+                arr[j + 1] = key;
             }
-            else break;
+            isChoice = true;
+            break;
+        default:
+            cout << "Введите корректное значение !";
         }
-        arr[j + 1] = key;
-    }
+    } while (!isChoice);
+
+    
 
     PrintHeader();
     for (int i = 0; i < count; i++) {

@@ -1,34 +1,30 @@
 .code
 
-; void AsmVigenereCipher(char* text (RCX), const char* key (RDX), bool encrypt (R8))
-
 AsmVigenereCipher PROC
     push rbx
     push rsi
     push rdi
     
-    mov rsi, rcx        ; text
-    mov rdi, rdx        ; key
+    mov rsi, rcx       
+    mov rdi, rdx       
     
     test rsi, rsi
     jz Done
     test rdi, rdi
     jz Done
 
-    xor r10, r10        ; Индекс ключа
+    xor r10, r10        
     
 LoopChar:
-    mov al, [rsi]       ; Загружаем символ
+    mov al, [rsi]     
     test al, al
     jz Done
 
-    ; Проверка на 'A'...'Z'
     cmp al, 'A'
     jb NextChar
     cmp al, 'Z'
     jbe IsUpper
 
-    ; Проверка на 'a'...'z'
     cmp al, 'a'
     jb NextChar
     cmp al, 'z'
@@ -43,7 +39,6 @@ IsLower:
     mov bl, 'a'
 
 Process:
-    ; Получаем символ ключа (циклически)
     mov r11, r10
     mov dl, [rdi + r10]
     test dl, dl
@@ -52,10 +47,10 @@ Process:
     mov dl, [rdi]
 KeyOK:
     
-    sub dl, 'a'         ; смещение ключа (считаем ключ в lowercase)
-    sub al, bl          ; al = text - base
+    sub dl, 'a'        
+    sub al, bl         
     
-    cmp r8b, 1          ; Encrypt?
+    cmp r8b, 1          
     je DoEncrypt
     
     ; Decrypt
@@ -72,7 +67,7 @@ CalcMod:
     div dl
     mov al, ah
     
-    add al, bl          ; Восстанавливаем ASCII
+    add al, bl         
     mov [rsi], al
 
     inc r10
@@ -87,8 +82,6 @@ Done:
     pop rbx
     ret
 AsmVigenereCipher ENDP
-
-; int AsmBuyTicket(int* ticketsLeft (RCX), int* ticketsSold (RDX), int count (R8))
 
 AsmBuyTicket PROC
     mov eax, [rcx]
@@ -109,12 +102,7 @@ Fail:
     ret
 AsmBuyTicket ENDP
 
-; int AsmCheckFilter(const char* city (RCX), const char* target (RDX), 
-;                    int arrH (R8), int arrM (R9), 
-;                    int minH (Stack), int maxH (Stack))
-
 AsmCheckFilter PROC
-    ; Сравнение строк
     push rsi
     push rdi
     
@@ -140,9 +128,7 @@ StringsNotEqual:
 StringsEqual:
     pop rdi
     pop rsi
-    
-    ; Проверка времени (аргументы 5 и 6 в стеке)
-    ; Shadow space (32) + ret (8) = 40
+
     mov eax, [rsp + 40] ; minH
     mov edx, [rsp + 48] ; maxH
     
